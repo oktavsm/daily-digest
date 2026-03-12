@@ -80,11 +80,22 @@ def fetch_hn_stories(n: int = 5) -> list[dict]:
 
 
 # ─── 2. Gemini ────────────────────────────────────────────────────────────────
-def call_gemini(prompt: str) -> str:
+def call_gemini(prompt: str, retries: int = 3) -> str:
+    import time
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}"
     body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
-    resp = fetch_json(url, headers={"Content-Type": "application/json"}, data=body)
-    return resp["candidates"][0]["content"]["parts"][0]["text"].strip()
+    for attempt in range(1, retries + 1):
+        try:
+            resp = fetch_json(url, headers={"Content-Type": "application/json"}, data=body)
+            text = resp["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if text:
+                return text
+            raise ValueError("Empty response from Gemini")
+        except Exception as e:
+            if attempt == retries:
+                raise
+            log(f"   ⚠️  Gemini attempt {attempt} failed: {e}, retrying in 5s...")
+            time.sleep(5)
 
 
 def generate_hn_summaries(stories: list[dict]) -> list[dict]:
@@ -97,8 +108,14 @@ HANYA output JSON, tanpa markdown backtick.
 
 Artikel:
 {titles}"""
-    raw = call_gemini(prompt)
-    summaries = json.loads(raw)
+    for attempt in range(3):
+        try:
+            raw = call_gemini(prompt)
+            summaries = json.loads(raw)
+            break
+        except (json.JSONDecodeError, KeyError) as e:
+            if attempt == 2: raise
+            import time; log(f"   ⚠️  JSON parse failed ({e}), retry {attempt+1}..."); time.sleep(5)
     for item in summaries:
         idx = item["index"] - 1
         if idx < len(stories):
@@ -186,8 +203,14 @@ Output JSON (HANYA JSON, tanpa markdown backtick):
 
     emoji = TOPIC_EMOJIS[topic]
     log(f"{emoji} Gemini: generating {topic} concept...")
-    raw = call_gemini(PROMPTS[topic])
-    concept = json.loads(raw)
+    for attempt in range(3):
+        try:
+            raw = call_gemini(PROMPTS[topic])
+            concept = json.loads(raw)
+            break
+        except (json.JSONDecodeError, KeyError) as e:
+            if attempt == 2: raise
+            import time; log(f"   ⚠️  JSON parse failed ({e}), retry {attempt+1}..."); time.sleep(5)
     concept["topic_type"] = topic  # pastikan ada
     log(f"   ✓ Concept [{topic}]: {concept['title']}")
     return concept
