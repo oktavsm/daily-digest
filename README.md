@@ -9,7 +9,7 @@ A Python script that runs daily via cron, generates a tech digest using AI, comm
 - A full HTML `/todays` page served on your personal site
 
 ## 🗓️ Daily Digest
-[![Daily Digest](https://oktaavsm.bccdev.id/todays/digest.svg)](https://oktaavsm.bccdev.id/todays)
+[![Daily Digest](https://raw.githubusercontent.com/oktavsm/daily-digest/main/svg/latest.svg)](https://oktaavsm.bccdev.id/todays)
 
 ---
 
