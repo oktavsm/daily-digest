@@ -121,27 +121,24 @@ Output dalam format JSON dengan struktur berikut (HANYA JSON, tanpa markdown bac
 
 # ─── 3. Generate SVG ─────────────────────────────────────────────────────────
 def generate_svg(stories: list[dict], concept: dict) -> str:
-    """Generates an SVG card for GitHub profile README."""
     def trunc(s: str, n: int) -> str:
-        s = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+        s = s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"','&quot;')
         return s if len(s) <= n else s[:n-1] + "…"
 
-    # Stories: each row = 16px title + 13px meta + 9px gap = 38px per row
     story_rows = ""
     for i, s in enumerate(stories[:4]):
         y_title = 104 + i * 38
         y_meta  = y_title + 15
-        story_rows += f"""
-  <text x="32" y="{y_title}" class="story-title">{trunc(s['title'], 60)}</text>
-  <text x="32" y="{y_meta}" class="story-meta">▲ {s['score']}  💬 {s['comments']}  by {trunc(s['by'], 16)}</text>"""
+        story_rows += f'''
+  <text x="32" y="{y_title}" class="st">{trunc(s['title'], 60)}</text>
+  <text x="32" y="{y_meta}" class="sm">▲ {s['score']}  💬 {s['comments']}  by {trunc(s['by'], 16)}</text>'''
 
-    # Layout: 4 stories end at y = 104 + 3*38 + 15 = 233
     divider_y   = 252
-    net_label_y = divider_y + 24   # 276
-    badge_y     = net_label_y + 14 # 290
-    title_y     = badge_y + 30     # 320
-    tldr_y      = title_y + 20     # 340
-    cmd_y       = tldr_y + 28      # 368
+    net_label_y = divider_y + 24
+    badge_y     = net_label_y + 14
+    title_y     = badge_y + 30
+    tldr_y      = title_y + 20
+    cmd_y       = tldr_y + 28
 
     concept_title = trunc(concept["title"], 46)
     concept_tldr  = trunc(concept["tldr"], 70)
@@ -151,83 +148,59 @@ def generate_svg(stories: list[dict], concept: dict) -> str:
     cmd = trunc(concept.get("cisco_command", ""), 54)
     cmd_block = ""
     if cmd:
-        cmd_block = f"""
+        cmd_block = f'''
   <rect x="20" y="{cmd_y}" width="560" height="26" rx="5" fill="#1c2128"/>
-  <text x="32" y="{cmd_y + 17}" class="cmd-text">$ {cmd}</text>"""
+  <text x="32" y="{cmd_y+17}" class="ct">$ {cmd}</text>'''
         fun_y = cmd_y + 44
     else:
         fun_y = cmd_y + 10
 
-    fun_fact  = textwrap.fill(concept.get("fun_fact", ""), 78)
-    fun_lines = fun_fact.split("\n")[:2]
-    fun_text  = ""
+    import textwrap
+    fun_lines = textwrap.fill(concept.get("fun_fact",""), 78).split("\n")[:2]
+    fun_text = ""
     for line in fun_lines:
-        fun_text += f'\n  <text x="32" y="{fun_y}" class="fun-fact">{trunc(line, 80)}</text>'
+        fun_text += f'\n  <text x="32" y="{fun_y}" class="ff">{trunc(line,80)}</text>'
         fun_y += 16
 
     total_h  = fun_y + 36
     footer_y = total_h - 28
+    import os, datetime
+    DATE_STR = datetime.date.today().strftime("%Y-%m-%d")
+    GITHUB_USERNAME = os.getenv("GITHUB_USERNAME","oktavsm")
+    BASE_URL = os.getenv("BASE_URL","https://oktaavsm.bccdev.id")
 
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="600" height="{total_h}" viewBox="0 0 600 {total_h}">
-  <defs>
-    <style>
-      .bg         {{ fill: #0d1117; }}
-      .label      {{ font: 700 9px 'JetBrains Mono',monospace; fill: #484f58; letter-spacing:1.5px; }}
-      .story-title{{ font: 500 11px 'JetBrains Mono',monospace; fill: #cdd9e5; }}
-      .story-meta {{ font: 400  9px 'JetBrains Mono',monospace; fill: #484f58; }}
-      .concept-ttl{{ font: 700 14px 'JetBrains Mono',monospace; fill: #39d353; }}
-      .concept-tl {{ font: 400 10px 'JetBrains Mono',monospace; fill: #8b949e; }}
-      .cat-badge  {{ font: 700  9px 'JetBrains Mono',monospace; fill: #0d1117; }}
-      .cmd-text   {{ font: 700 11px 'JetBrains Mono',monospace; fill: #39d353; }}
-      .fun-fact   {{ font: 400 10px 'JetBrains Mono',monospace; fill: #6e7681; font-style:italic; }}
-      .date-text  {{ font: 700 10px 'JetBrains Mono',monospace; fill: #484f58; }}
-    </style>
-  </defs>
-
-  <!-- BG -->
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="600" height="{total_h}" viewBox="0 0 600 {total_h}">
+  <defs><style>
+    .bg{{fill:#0d1117}}.lb{{font:700 9px monospace;fill:#484f58;letter-spacing:1.5px}}
+    .st{{font:500 11px monospace;fill:#cdd9e5}}.sm{{font:400 9px monospace;fill:#484f58}}
+    .ct{{font:700 11px monospace;fill:#39d353}}.ff{{font:400 10px monospace;fill:#6e7681;font-style:italic}}
+    .dt{{font:700 10px monospace;fill:#484f58}}.cttl{{font:700 14px monospace;fill:#39d353}}
+    .ctldr{{font:400 10px monospace;fill:#8b949e}}.cbadge{{font:700 9px monospace;fill:#0d1117}}
+  </style></defs>
   <rect width="600" height="{total_h}" class="bg"/>
-
-  <!-- Top bar -->
   <rect width="600" height="46" fill="#161b22"/>
   <rect y="46" width="600" height="1" fill="#30363d"/>
   <circle cx="18" cy="23" r="5" fill="#ff5f56"/>
   <circle cx="34" cy="23" r="5" fill="#ffbd2e"/>
   <circle cx="50" cy="23" r="5" fill="#27c93f"/>
-  <text x="70" y="28" class="date-text">daily-digest // {DATE_STR}</text>
-  <text x="590" y="28" class="date-text" text-anchor="end">@{GITHUB_USERNAME}</text>
-
-  <!-- HN label + left accent bar -->
-  <text x="32" y="74" class="label">// HACKER NEWS TOP STORIES</text>
-  <rect x="20" y="82" width="2" height="{4 * 38 - 4}" fill="#39d353" opacity="0.5"/>
-
-  <!-- Stories -->
+  <text x="70" y="28" class="dt">daily-digest // {DATE_STR}</text>
+  <text x="590" y="28" class="dt" text-anchor="end">@{GITHUB_USERNAME}</text>
+  <text x="32" y="74" class="lb">// HACKER NEWS TOP STORIES</text>
+  <rect x="20" y="82" width="2" height="148" fill="#39d353" opacity="0.5"/>
   {story_rows}
-
-  <!-- Divider -->
   <rect x="0" y="{divider_y}" width="600" height="1" fill="#21262d"/>
-
-  <!-- Networking label -->
-  <text x="32" y="{net_label_y}" class="label">// NETWORKING CONCEPT OF THE DAY</text>
-
-  <!-- Category badge -->
+  <text x="32" y="{net_label_y}" class="lb">// NETWORKING CONCEPT OF THE DAY</text>
   <rect x="20" y="{badge_y}" width="{badge_w}" height="17" rx="8" fill="#2ea043"/>
-  <text x="{20 + badge_w//2}" y="{badge_y + 12}" class="cat-badge" text-anchor="middle">{concept_cat}</text>
-
-  <!-- Concept title + tldr -->
-  <text x="20" y="{title_y}" class="concept-ttl">{concept_title}</text>
-  <text x="20" y="{tldr_y}" class="concept-tl">{concept_tldr}</text>
-
+  <text x="{20+badge_w//2}" y="{badge_y+12}" class="cbadge" text-anchor="middle">{concept_cat}</text>
+  <text x="20" y="{title_y}" class="cttl">{concept_title}</text>
+  <text x="20" y="{tldr_y}" class="ctldr">{concept_tldr}</text>
   {cmd_block}
   {fun_text}
-
-  <!-- Footer -->
-  <rect y="{footer_y - 1}" width="600" height="1" fill="#21262d"/>
+  <rect y="{footer_y-1}" width="600" height="1" fill="#21262d"/>
   <rect y="{footer_y}" width="600" height="28" fill="#161b22"/>
-  <text x="20" y="{footer_y + 18}" class="date-text">auto-generated by daily-digest</text>
-  <text x="590" y="{footer_y + 18}" class="date-text" text-anchor="end">{BASE_URL}/todays</text>
-</svg>"""
-    return svg
-
+  <text x="20" y="{footer_y+18}" class="dt">auto-generated by daily-digest</text>
+  <text x="590" y="{footer_y+18}" class="dt" text-anchor="end">{BASE_URL}/todays</text>
+</svg>'''
 
 # ─── 4. Generate HTML /todays ─────────────────────────────────────────────────
 def generate_html(stories: list[dict], concept: dict) -> str:

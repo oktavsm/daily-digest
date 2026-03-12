@@ -1,70 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="480" viewBox="0 0 600 480">
-  <defs>
-    <style>
-      .bg         { fill: #0d1117; }
-      .label      { font: 700 9px 'JetBrains Mono',monospace; fill: #484f58; letter-spacing:1.5px; }
-      .story-title{ font: 500 11px 'JetBrains Mono',monospace; fill: #cdd9e5; }
-      .story-meta { font: 400  9px 'JetBrains Mono',monospace; fill: #484f58; }
-      .concept-ttl{ font: 700 14px 'JetBrains Mono',monospace; fill: #39d353; }
-      .concept-tl { font: 400 10px 'JetBrains Mono',monospace; fill: #8b949e; }
-      .cat-badge  { font: 700  9px 'JetBrains Mono',monospace; fill: #0d1117; }
-      .cmd-text   { font: 700 11px 'JetBrains Mono',monospace; fill: #39d353; }
-      .fun-fact   { font: 400 10px 'JetBrains Mono',monospace; fill: #6e7681; font-style:italic; }
-      .date-text  { font: 700 10px 'JetBrains Mono',monospace; fill: #484f58; }
-    </style>
-  </defs>
-
-  <!-- BG -->
+  <defs><style>
+    .bg{fill:#0d1117}.lb{font:700 9px monospace;fill:#484f58;letter-spacing:1.5px}
+    .st{font:500 11px monospace;fill:#cdd9e5}.sm{font:400 9px monospace;fill:#484f58}
+    .ct{font:700 11px monospace;fill:#39d353}.ff{font:400 10px monospace;fill:#6e7681;font-style:italic}
+    .dt{font:700 10px monospace;fill:#484f58}.cttl{font:700 14px monospace;fill:#39d353}
+    .ctldr{font:400 10px monospace;fill:#8b949e}.cbadge{font:700 9px monospace;fill:#0d1117}
+  </style></defs>
   <rect width="600" height="480" class="bg"/>
-
-  <!-- Top bar -->
   <rect width="600" height="46" fill="#161b22"/>
   <rect y="46" width="600" height="1" fill="#30363d"/>
   <circle cx="18" cy="23" r="5" fill="#ff5f56"/>
   <circle cx="34" cy="23" r="5" fill="#ffbd2e"/>
   <circle cx="50" cy="23" r="5" fill="#27c93f"/>
-  <text x="70" y="28" class="date-text">daily-digest // 2026-03-12</text>
-  <text x="590" y="28" class="date-text" text-anchor="end">@oktavsm</text>
-
-  <!-- HN label + left accent bar -->
-  <text x="32" y="74" class="label">// HACKER NEWS TOP STORIES</text>
+  <text x="70" y="28" class="dt">daily-digest // 2026-03-12</text>
+  <text x="590" y="28" class="dt" text-anchor="end">@oktavsm</text>
+  <text x="32" y="74" class="lb">// HACKER NEWS TOP STORIES</text>
   <rect x="20" y="82" width="2" height="148" fill="#39d353" opacity="0.5"/>
-
-  <!-- Stories -->
   
-  <text x="32" y="104" class="story-title">Show HN: s@: decentralized social networking over static si…</text>
-  <text x="32" y="119" class="story-meta">▲ 174  💬 64  by remywang</text>
-  <text x="32" y="142" class="story-title">WireGuard Is Two Things</text>
-  <text x="32" y="157" class="story-meta">▲ 34  💬 9  by mlhpdx</text>
-  <text x="32" y="180" class="story-title">Temporal: The 9-year journey to fix time in JavaScript</text>
-  <text x="32" y="195" class="story-meta">▲ 608  💬 198  by robpalmer</text>
-  <text x="32" y="218" class="story-title">Tested: How Many Times Can a DVD±RW Be Rewritten? Methodolo…</text>
-  <text x="32" y="233" class="story-meta">▲ 108  💬 11  by giuliomagnifico</text>
-
-  <!-- Divider -->
+  <text x="32" y="104" class="st">Show HN: s@: decentralized social networking over static si…</text>
+  <text x="32" y="119" class="sm">▲ 177  💬 65  by remywang</text>
+  <text x="32" y="142" class="st">WireGuard Is Two Things</text>
+  <text x="32" y="157" class="sm">▲ 37  💬 9  by mlhpdx</text>
+  <text x="32" y="180" class="st">Temporal: The 9-year journey to fix time in JavaScript</text>
+  <text x="32" y="195" class="sm">▲ 610  💬 198  by robpalmer</text>
+  <text x="32" y="218" class="st">Tested: How Many Times Can a DVD±RW Be Rewritten? Methodolo…</text>
+  <text x="32" y="233" class="sm">▲ 109  💬 12  by giuliomagnifico</text>
   <rect x="0" y="252" width="600" height="1" fill="#21262d"/>
-
-  <!-- Networking label -->
-  <text x="32" y="276" class="label">// NETWORKING CONCEPT OF THE DAY</text>
-
-  <!-- Category badge -->
-  <rect x="20" y="290" width="69" height="17" rx="8" fill="#2ea043"/>
-  <text x="54" y="302" class="cat-badge" text-anchor="middle">Routing</text>
-
-  <!-- Concept title + tldr -->
-  <text x="20" y="320" class="concept-ttl">Inter-VLAN Routing (Router-on-a-Stick)</text>
-  <text x="20" y="340" class="concept-tl">Memungkinkan perangkat di Virtual LAN (VLAN) yang berbeda untuk berko…</text>
-
+  <text x="32" y="276" class="lb">// NETWORKING CONCEPT OF THE DAY</text>
+  <rect x="20" y="290" width="83" height="17" rx="8" fill="#2ea043"/>
+  <text x="61" y="302" class="cbadge" text-anchor="middle">Switching</text>
+  <text x="20" y="320" class="cttl">Pengenalan VLAN (Virtual LAN)</text>
+  <text x="20" y="340" class="ctldr">VLAN memungkinkan pemisahan logis jaringan pada satu switch fisik men…</text>
   
   <rect x="20" y="368" width="560" height="26" rx="5" fill="#1c2128"/>
-  <text x="32" y="385" class="cmd-text">$ encapsulation dot1Q 10</text>
+  <text x="32" y="385" class="ct">$ switchport access vlan 10</text>
   
-  <text x="32" y="412" class="fun-fact">&quot;Router-on-a-Stick&quot; mendapatkan namanya karena router berfungsi seper…</text>
-  <text x="32" y="428" class="fun-fact">'tongkat' atau satu kabel yang 'menyimpan' banyak jaringan (VLAN) di dalamnya,</text>
-
-  <!-- Footer -->
+  <text x="32" y="412" class="ff">VLAN ID 1 adalah VLAN default di sebagian besar switch Cisco, di mana semua</text>
+  <text x="32" y="428" class="ff">port secara default menjadi anggota VLAN ini sebelum dikonfigurasi, dan VLAN</text>
   <rect y="451" width="600" height="1" fill="#21262d"/>
   <rect y="452" width="600" height="28" fill="#161b22"/>
-  <text x="20" y="470" class="date-text">auto-generated by daily-digest</text>
-  <text x="590" y="470" class="date-text" text-anchor="end">https://oktaavsm.bccdev.id/todays</text>
+  <text x="20" y="470" class="dt">auto-generated by daily-digest</text>
+  <text x="590" y="470" class="dt" text-anchor="end">https://oktaavsm.bccdev.id/todays</text>
 </svg>
