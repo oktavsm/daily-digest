@@ -107,24 +107,89 @@ Artikel:
     return stories
 
 
-def generate_networking_concept() -> dict:
-    log("🌐 Gemini: generating networking concept...")
-    prompt = f"""Kamu adalah dosen jaringan komputer yang mengajar menggunakan Cisco Packet Tracer.
-Hari ini tanggal {DATE_STR}. Generate SATU konsep jaringan komputer untuk dipelajari hari ini.
+def generate_concept() -> dict:
+    # Rotasi topik berdasarkan hari: 0=Networking, 1=Java, 2=CompProg, 3=Android
+    TOPICS = ["Networking", "Java", "CompProg", "Android"]
+    # Slot berdasarkan jam: 00-07=0, 08-15=1, 16-23=2
+    hour = datetime.datetime.now().hour
+    slot = 0 if hour < 8 else (1 if hour < 16 else 2)
+    topic = TOPICS[(TODAY.toordinal() * 3 + slot) % 4]
 
-Output dalam format JSON dengan struktur berikut (HANYA JSON, tanpa markdown backtick):
+    TOPIC_EMOJIS = {
+        "Networking": "🌐",
+        "Java":       "☕",
+        "CompProg":   "⚡",
+        "Android":    "🤖",
+    }
+
+    PROMPTS = {
+        "Networking": f"""Kamu adalah dosen jaringan komputer yang mengajar menggunakan Cisco Packet Tracer.
+Hari ini tanggal {DATE_STR}. Generate SATU konsep jaringan komputer untuk dipelajari hari ini.
+Jangan mengulang topik yang sudah umum seperti static routing atau VLAN dasar — pilih yang lebih spesifik dan menarik.
+
+Output JSON (HANYA JSON, tanpa markdown backtick):
 {{
-  "title": "nama konsep (singkat, max 6 kata)",
+  "title": "nama konsep singkat (max 6 kata)",
+  "topic_type": "Networking",
   "category": "salah satu dari: Routing | Switching | Security | Protocol | Wireless | IoT | SDN",
-  "tldr": "penjelasan 1 kalimat yang sangat ringkas",
-  "explanation": "penjelasan 3-4 paragraf dalam Bahasa Indonesia, teknikal tapi mudah dipahami",
-  "ascii_diagram": "diagram ASCII yang relevan (max 10 baris), atau kosong string jika tidak relevan",
-  "cisco_command": "contoh 1 perintah CLI Cisco yang paling relevan, atau kosong string jika tidak ada",
-  "fun_fact": "1 fakta menarik seputar konsep ini (1-2 kalimat)"
-}}"""
-    raw = call_gemini(prompt)
+  "tldr": "1 kalimat ringkas",
+  "explanation": "3-4 paragraf Bahasa Indonesia, teknikal tapi mudah dipahami",
+  "code_snippet": "contoh 1 perintah CLI Cisco paling relevan, atau string kosong",
+  "fun_fact": "1-2 kalimat fakta menarik"
+}}""",
+
+        "Java": f"""Kamu adalah dosen pemrograman Java untuk mahasiswa semester awal.
+Hari ini tanggal {DATE_STR}. Generate SATU konsep pemrograman Java dasar untuk dipelajari hari ini.
+Pilih konsep yang praktis dan sering dipakai — OOP, collections, exception handling, dsb.
+
+Output JSON (HANYA JSON, tanpa markdown backtick):
+{{
+  "title": "nama konsep singkat (max 6 kata)",
+  "topic_type": "Java",
+  "category": "salah satu dari: OOP | Collections | Exception | I/O | Concurrency | Generics | Functional",
+  "tldr": "1 kalimat ringkas",
+  "explanation": "3-4 paragraf Bahasa Indonesia, teknikal tapi mudah dipahami",
+  "code_snippet": "contoh kode Java singkat dan relevan (5-10 baris), atau string kosong",
+  "fun_fact": "1-2 kalimat fakta menarik tentang Java atau konsep ini"
+}}""",
+
+        "CompProg": f"""Kamu adalah coach competitive programming yang mengajar C++.
+Hari ini tanggal {DATE_STR}. Generate SATU konsep algoritma atau struktur data untuk competitive programming.
+Pilih yang sering muncul di Codeforces/LeetCode — DP, graph, greedy, segment tree, dsb.
+
+Output JSON (HANYA JSON, tanpa markdown backtick):
+{{
+  "title": "nama algoritma/konsep singkat (max 6 kata)",
+  "topic_type": "CompProg",
+  "category": "salah satu dari: DP | Graph | Greedy | Data Structure | Math | String | Searching",
+  "tldr": "1 kalimat ringkas",
+  "explanation": "3-4 paragraf Bahasa Indonesia, teknikal tapi mudah dipahami, sertakan kompleksitas waktu",
+  "code_snippet": "contoh implementasi C++ singkat (5-12 baris), atau string kosong",
+  "fun_fact": "1-2 kalimat fakta menarik tentang algoritma ini"
+}}""",
+
+        "Android": f"""Kamu adalah developer Android senior yang mengajar Android dasar dengan Kotlin.
+Hari ini tanggal {DATE_STR}. Generate SATU konsep Android development untuk dipelajari hari ini.
+Pilih yang relevan untuk pemula — Activity, Fragment, ViewModel, Retrofit, Room, dsb.
+
+Output JSON (HANYA JSON, tanpa markdown backtick):
+{{
+  "title": "nama konsep singkat (max 6 kata)",
+  "topic_type": "Android",
+  "category": "salah satu dari: UI | Architecture | Networking | Database | Jetpack | Kotlin | Testing",
+  "tldr": "1 kalimat ringkas",
+  "explanation": "3-4 paragraf Bahasa Indonesia, teknikal tapi mudah dipahami",
+  "code_snippet": "contoh kode Kotlin/XML singkat dan relevan (5-10 baris), atau string kosong",
+  "fun_fact": "1-2 kalimat fakta menarik tentang Android atau konsep ini"
+}}""",
+    }
+
+    emoji = TOPIC_EMOJIS[topic]
+    log(f"{emoji} Gemini: generating {topic} concept...")
+    raw = call_gemini(PROMPTS[topic])
     concept = json.loads(raw)
-    log(f"   ✓ Concept: {concept['title']}")
+    concept["topic_type"] = topic  # pastikan ada
+    log(f"   ✓ Concept [{topic}]: {concept['title']}")
     return concept
 
 
@@ -154,7 +219,7 @@ def generate_svg(stories: list[dict], concept: dict) -> str:
     concept_cat   = concept["category"]
     badge_w       = max(len(concept_cat) * 7 + 20, 60)
 
-    cmd = trunc(concept.get("cisco_command", ""), 54)
+    cmd = trunc(concept.get("code_snippet", concept.get("cisco_command", "")), 54)
     cmd_block = ""
     if cmd:
         cmd_block = f'''
@@ -198,7 +263,7 @@ def generate_svg(stories: list[dict], concept: dict) -> str:
   <rect x="20" y="82" width="2" height="148" fill="#39d353" opacity="0.5"/>
   {story_rows}
   <rect x="0" y="{divider_y}" width="600" height="1" fill="#21262d"/>
-  <text x="32" y="{net_label_y}" class="lb">// NETWORKING CONCEPT OF THE DAY</text>
+  <text x="32" y="{net_label_y}" class="lb">// {concept.get("topic_type","CONCEPT").upper()} CONCEPT OF THE DAY</text>
   <rect x="20" y="{badge_y}" width="{badge_w}" height="17" rx="8" fill="#2ea043"/>
   <text x="{20+badge_w//2}" y="{badge_y+12}" class="cbadge" text-anchor="middle">{concept_cat}</text>
   <text x="20" y="{title_y}" class="cttl">{concept_title}</text>
@@ -236,8 +301,9 @@ def generate_html(stories: list[dict], concept: dict) -> str:
         ascii_block = f'<pre class="ascii">{concept["ascii_diagram"]}</pre>'
 
     cmd_block = ""
-    if concept.get("cisco_command"):
-        cmd_block = f'<div class="cmd-block"><span class="prompt">$</span> {concept["cisco_command"]}</div>'
+    code = concept.get("code_snippet") or concept.get("cisco_command", "")
+    if code:
+        cmd_block = f'<div class="cmd-block"><span class="prompt">$</span> {code}</div>'
 
     explanation_html = "".join(
         f"<p>{p.strip()}</p>"
@@ -523,7 +589,7 @@ def generate_html(stories: list[dict], concept: dict) -> str:
   <!-- Networking Concept -->
   <section>
     <div class="section-header">
-      <span class="section-label">// networking concept of the day</span>
+      <span class="section-label">// {concept.get('topic_type','concept').lower()} concept of the day</span>
       <div class="section-line"></div>
     </div>
     <div class="concept-card">
@@ -580,13 +646,12 @@ def generate_markdown(stories: list[dict], concept: dict) -> str:
 {summary}
 """
 
-    ascii_block = ""
-    if concept.get("ascii_diagram"):
-        ascii_block = f"```\n{concept['ascii_diagram']}\n```"
+    code = concept.get("code_snippet") or concept.get("cisco_command", "")
+    code_block = f"```\n{code}\n```" if code else ""
 
-    cmd_block = ""
-    if concept.get("cisco_command"):
-        cmd_block = f"```\n{concept['cisco_command']}\n```"
+    topic_type = concept.get("topic_type", "Concept")
+    TOPIC_EMOJI = {"Networking":"🌐","Java":"☕","CompProg":"⚡","Android":"🤖"}
+    emoji = TOPIC_EMOJI.get(topic_type, "📚")
 
     return f"""# Daily Digest — {DATE_NICE}
 
@@ -599,16 +664,14 @@ def generate_markdown(stories: list[dict], concept: dict) -> str:
 
 ---
 
-## 🌐 Networking Concept: {concept['title']}
+## {emoji} {topic_type} Concept: {concept['title']}
 
 **Category:** {concept['category']}
 **TL;DR:** {concept['tldr']}
 
 {concept['explanation']}
 
-{ascii_block}
-
-{f"**Cisco CLI:**{chr(10)}{cmd_block}" if cmd_block else ""}
+{code_block}
 
 💡 **Fun Fact:** {concept.get('fun_fact','')}
 """
@@ -664,12 +727,15 @@ def notify_discord(stories: list[dict], concept: dict, success: bool):
         return
     status = "✅ Success" if success else "❌ Failed"
     top_story = stories[0]['title'] if stories else "—"
+    TOPIC_EMOJI = {"Networking":"🌐","Java":"☕","CompProg":"⚡","Android":"🤖"}
+    topic_type = concept.get('topic_type','Concept')
+    emoji = TOPIC_EMOJI.get(topic_type,'📚')
     payload = {
         "embeds": [{
             "title": f"{status} · Daily Digest {DATE_STR}",
             "color": 0x39d353 if success else 0xff5f56,
             "fields": [
-                {"name": "🌐 Concept", "value": concept.get('title','—'), "inline": True},
+                {"name": f"{emoji} Concept [{topic_type}]", "value": concept.get('title','—'), "inline": True},
                 {"name": "📰 Top Story", "value": top_story[:100], "inline": False},
                 {"name": "🔗 View", "value": f"{BASE_URL}/todays", "inline": False},
             ],
@@ -713,7 +779,7 @@ def main():
     try:
         stories = fetch_hn_stories(5)
         stories = generate_hn_summaries(stories)
-        concept = generate_networking_concept()
+        concept = generate_concept()
 
         svg  = generate_svg(stories, concept)
         html = generate_html(stories, concept)
