@@ -541,7 +541,7 @@ def generate_html(stories: list[dict], concept: dict) -> str:
       <div class="section-line"></div>
     </div>
     <div class="svg-preview">
-      <img src="{BASE_URL}/todays/digest.svg" alt="Daily Digest Card"/>
+      <img src="{BASE_URL}/todays/digest.svg?v={int(datetime.date.today().strftime("%Y%m%d"))}" alt="Daily Digest Card"/>
       <div class="svg-copy" onclick="navigator.clipboard.writeText(this.dataset.md).then(()=>this.textContent='✓ Copied!');" 
            data-md="![Daily Digest]({BASE_URL}/todays/digest.svg)">
         ![Daily Digest]({BASE_URL}/todays/digest.svg) &nbsp;← click to copy markdown
