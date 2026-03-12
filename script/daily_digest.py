@@ -31,12 +31,21 @@ BASE_URL         = os.getenv("BASE_URL", "https://oktaavsm.bccdev.id")
 TODAY    = datetime.date.today()
 DATE_STR = TODAY.strftime("%Y-%m-%d")
 DATE_NICE= TODAY.strftime("%A, %d %B %Y")
+TIME_STR = datetime.datetime.now().strftime("%H%M")
 
 LOGS: list[str] = []
 
 def log(msg: str):
     print(msg)
     LOGS.append(msg)
+
+
+def slugify(text: str) -> str:
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[\s_]+', '-', text)
+    text = re.sub(r'-+', '-', text)
+    return text[:50].strip('-')
 
 
 # ─── HTTP Helper ───────────────────────────────────────────────────────────────
@@ -606,14 +615,15 @@ def generate_markdown(stories: list[dict], concept: dict) -> str:
 
 
 # ─── 6. Git commit & push ─────────────────────────────────────────────────────
-def git_commit_push(repo_dir: str, md_content: str, svg_content: str):
+def git_commit_push(repo_dir: str, md_content: str, svg_content: str, concept_title: str = ""):
     log("📦 Committing to daily-digest repo...")
     repo = Path(repo_dir)
 
-    # Write markdown
+    # Write markdown — unique filename per run: DATE_TIME_concept-slug.md
     date_dir = repo / "data" / str(TODAY.year) / f"{TODAY.month:02d}"
     date_dir.mkdir(parents=True, exist_ok=True)
-    md_file = date_dir / f"{DATE_STR}.md"
+    slug = slugify(concept_title) if concept_title else "digest"
+    md_file = date_dir / f"{DATE_STR}_{TIME_STR}_{slug}.md"
     md_file.write_text(md_content)
 
     # Write SVG
@@ -631,7 +641,7 @@ def git_commit_push(repo_dir: str, md_content: str, svg_content: str):
         return result.stdout.strip()
 
     git("add", "-A")
-    git("commit", "-m", f"feat: daily digest {DATE_STR} 🌿")
+    git("commit", "-m", f"feat: digest {DATE_STR} {TIME_STR} — {concept_title} 🌿")
     git("push")
     log(f"   ✓ Committed: {md_file.name}")
 
@@ -712,7 +722,7 @@ def main():
         write_frontend(html, svg)
 
         if DIGEST_REPO_DIR:
-            git_commit_push(DIGEST_REPO_DIR, md, svg)
+            git_commit_push(DIGEST_REPO_DIR, md, svg, concept.get('title', ''))
         else:
             log("⚠️  DIGEST_REPO_DIR not set, skipping git commit")
 
