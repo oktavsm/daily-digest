@@ -108,8 +108,8 @@ Artikel:
 
 
 def generate_concept() -> dict:
-    # Rotasi topik berdasarkan hari: 0=Networking, 1=Java, 2=CompProg, 3=Android
-    TOPICS = ["Networking", "Java", "CompProg", "Android"]
+    # Rotasi topik berdasarkan hari: 0=Networking, 1=Java, 2=Competitive Programming, 3=Android
+    TOPICS = ["Networking", "Java", "Competitive Programming", "Android"]
     # Slot berdasarkan jam: 00-07=0, 08-15=1, 16-23=2
     hour = datetime.datetime.now().hour
     slot = 0 if hour < 8 else (1 if hour < 16 else 2)
@@ -118,7 +118,7 @@ def generate_concept() -> dict:
     TOPIC_EMOJIS = {
         "Networking": "🌐",
         "Java":       "☕",
-        "CompProg":   "⚡",
+        "Competitive Programming":   "⚡",
         "Android":    "🤖",
     }
 
@@ -153,14 +153,14 @@ Output JSON (HANYA JSON, tanpa markdown backtick):
   "fun_fact": "1-2 kalimat fakta menarik tentang Java atau konsep ini"
 }}""",
 
-        "CompProg": f"""Kamu adalah coach competitive programming yang mengajar C++.
+        "Competitive Programming": f"""Kamu adalah coach competitive programming yang mengajar C++.
 Hari ini tanggal {DATE_STR}. Generate SATU konsep algoritma atau struktur data untuk competitive programming.
 Pilih yang sering muncul di Codeforces/LeetCode — DP, graph, greedy, segment tree, dsb.
 
 Output JSON (HANYA JSON, tanpa markdown backtick):
 {{
   "title": "nama algoritma/konsep singkat (max 6 kata)",
-  "topic_type": "CompProg",
+  "topic_type": "Competitive Programming",
   "category": "salah satu dari: DP | Graph | Greedy | Data Structure | Math | String | Searching",
   "tldr": "1 kalimat ringkas",
   "explanation": "3-4 paragraf Bahasa Indonesia, teknikal tapi mudah dipahami, sertakan kompleksitas waktu",
@@ -650,7 +650,7 @@ def generate_markdown(stories: list[dict], concept: dict) -> str:
     code_block = f"```\n{code}\n```" if code else ""
 
     topic_type = concept.get("topic_type", "Concept")
-    TOPIC_EMOJI = {"Networking":"🌐","Java":"☕","CompProg":"⚡","Android":"🤖"}
+    TOPIC_EMOJI = {"Networking":"🌐","Java":"☕","Competitive Programming":"⚡","Android":"🤖"}
     emoji = TOPIC_EMOJI.get(topic_type, "📚")
 
     return f"""# Daily Digest — {DATE_NICE}
@@ -727,7 +727,7 @@ def notify_discord(stories: list[dict], concept: dict, success: bool):
         return
     status = "✅ Success" if success else "❌ Failed"
     top_story = stories[0]['title'] if stories else "—"
-    TOPIC_EMOJI = {"Networking":"🌐","Java":"☕","CompProg":"⚡","Android":"🤖"}
+    TOPIC_EMOJI = {"Networking":"🌐","Java":"☕","Competitive Programming":"⚡","Android":"🤖"}
     topic_type = concept.get('topic_type','Concept')
     emoji = TOPIC_EMOJI.get(topic_type,'📚')
     payload = {
