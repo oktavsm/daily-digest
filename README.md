@@ -8,7 +8,8 @@ A Python script that runs daily via cron, generates a tech digest using AI, comm
 - SVG card for embedding in GitHub profile README
 - A full HTML `/todays` page served on your personal site
 
-![Daily Digest](https://oktaavsm.bccdev.id/todays/digest.svg)
+## 🗓️ Daily Digest
+[![Daily Digest](https://oktaavsm.bccdev.id/todays/digest.svg)](https://oktaavsm.bccdev.id/todays)
 
 ---
 
