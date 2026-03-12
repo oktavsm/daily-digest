@@ -796,6 +796,9 @@ def notify_email(stories: list[dict], concept: dict, success: bool):
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
+    WIB = datetime.timezone(datetime.timedelta(hours=7))
+    now_wib = datetime.datetime.now(WIB)
+    print(f"\n=========LOG FROM {now_wib.strftime('%Y-%m-%d')} TIME: {now_wib.strftime('%H:%M:%S')} WIB")
     log(f"🚀 Daily Digest starting — {DATE_STR}")
     success = False
     stories, concept = [], {}
@@ -825,6 +828,7 @@ def main():
         except Exception as e: log(f"⚠️  Discord notify failed: {e}")
         try: notify_email(stories, concept, success)
         except Exception as e: log(f"⚠️  Email notify failed: {e}")
+        print("======END OF LOG\n")
 
     sys.exit(0 if success else 1)
 
