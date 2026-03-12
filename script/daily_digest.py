@@ -668,7 +668,7 @@ def notify_discord(stories: list[dict], concept: dict, success: bool):
         }]
     }
     data = json.dumps(payload).encode()
-    req = urllib.request.Request(DISCORD_WEBHOOK, data=data, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(DISCORD_WEBHOOK, data=data, headers={"Content-Type": "application/json", "User-Agent": "DiscordBot (daily-digest, 1.0)"})
     urllib.request.urlopen(req, timeout=10)
     log("   ✓ Discord notified")
 
