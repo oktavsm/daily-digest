@@ -122,106 +122,109 @@ Output dalam format JSON dengan struktur berikut (HANYA JSON, tanpa markdown bac
 # ─── 3. Generate SVG ─────────────────────────────────────────────────────────
 def generate_svg(stories: list[dict], concept: dict) -> str:
     """Generates an SVG card for GitHub profile README."""
-    # truncate text helper
     def trunc(s: str, n: int) -> str:
+        s = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
         return s if len(s) <= n else s[:n-1] + "…"
 
+    # Stories: each row = 16px title + 13px meta + 9px gap = 38px per row
     story_rows = ""
     for i, s in enumerate(stories[:4]):
-        y = 296 + i * 36
-        title = trunc(s['title'], 62)
+        y_title = 104 + i * 38
+        y_meta  = y_title + 15
         story_rows += f"""
-    <text x="36" y="{y}" class="story-title">{title}</text>
-    <text x="36" y="{y+14}" class="story-meta">▲ {s['score']}  💬 {s['comments']}  by {trunc(s['by'],18)}</text>"""
+  <text x="32" y="{y_title}" class="story-title">{trunc(s['title'], 60)}</text>
+  <text x="32" y="{y_meta}" class="story-meta">▲ {s['score']}  💬 {s['comments']}  by {trunc(s['by'], 16)}</text>"""
 
-    concept_title = trunc(concept["title"], 44)
-    concept_tldr  = trunc(concept["tldr"], 72)
+    # Layout: 4 stories end at y = 104 + 3*38 + 15 = 233
+    divider_y   = 252
+    net_label_y = divider_y + 24   # 276
+    badge_y     = net_label_y + 14 # 290
+    title_y     = badge_y + 30     # 320
+    tldr_y      = title_y + 20     # 340
+    cmd_y       = tldr_y + 28      # 368
+
+    concept_title = trunc(concept["title"], 46)
+    concept_tldr  = trunc(concept["tldr"], 70)
     concept_cat   = concept["category"]
-    cmd = concept.get("cisco_command", "")
+    badge_w       = max(len(concept_cat) * 7 + 20, 60)
+
+    cmd = trunc(concept.get("cisco_command", ""), 54)
     cmd_block = ""
     if cmd:
-        cmd = trunc(cmd, 55)
         cmd_block = f"""
-    <rect x="26" y="490" width="548" height="28" rx="5" class="cmd-bg"/>
-    <text x="36" y="508" class="cmd-text">$ {cmd}</text>"""
+  <rect x="20" y="{cmd_y}" width="560" height="26" rx="5" fill="#1c2128"/>
+  <text x="32" y="{cmd_y + 17}" class="cmd-text">$ {cmd}</text>"""
+        fun_y = cmd_y + 44
+    else:
+        fun_y = cmd_y + 10
 
-    fun_fact = textwrap.fill(concept.get("fun_fact",""), 80)
+    fun_fact  = textwrap.fill(concept.get("fun_fact", ""), 78)
     fun_lines = fun_fact.split("\n")[:2]
-    fun_y = 536
-    fun_text = ""
+    fun_text  = ""
     for line in fun_lines:
-        fun_text += f'<text x="36" y="{fun_y}" class="fun-fact">{line}</text>'
+        fun_text += f'\n  <text x="32" y="{fun_y}" class="fun-fact">{trunc(line, 80)}</text>'
         fun_y += 16
 
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+    total_h  = fun_y + 36
+    footer_y = total_h - 28
+
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="600" height="{total_h}" viewBox="0 0 600 {total_h}">
   <defs>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=Syne:wght@700;800&amp;display=swap');
-      .bg {{ fill: #0d1117; }}
-      .panel {{ fill: #161b22; rx: 10; }}
-      .accent {{ fill: #39d353; }}
-      .accent-dim {{ fill: #2ea043; }}
-      .border {{ fill: none; stroke: #30363d; stroke-width: 1; }}
-      .label {{ font: 700 9px 'JetBrains Mono', monospace; fill: #484f58; letter-spacing: 1.5px; text-transform: uppercase; }}
-      .section-title {{ font: 800 13px 'Syne', sans-serif; fill: #e6edf3; }}
-      .story-title {{ font: 400 11px 'JetBrains Mono', monospace; fill: #cdd9e5; }}
-      .story-meta {{ font: 400 9px 'JetBrains Mono', monospace; fill: #484f58; }}
-      .concept-title {{ font: 800 15px 'Syne', sans-serif; fill: #39d353; }}
-      .concept-tldr {{ font: 400 11px 'JetBrains Mono', monospace; fill: #8b949e; }}
-      .cat-badge {{ font: 700 9px 'JetBrains Mono', monospace; fill: #0d1117; }}
-      .cmd-bg {{ fill: #1c2128; }}
-      .cmd-text {{ font: 700 11px 'JetBrains Mono', monospace; fill: #39d353; }}
-      .fun-fact {{ font: 400 10px 'JetBrains Mono', monospace; fill: #6e7681; font-style: italic; }}
-      .date-text {{ font: 700 10px 'JetBrains Mono', monospace; fill: #484f58; }}
-      .dot {{ fill: #39d353; }}
+      .bg         {{ fill: #0d1117; }}
+      .label      {{ font: 700 9px 'JetBrains Mono',monospace; fill: #484f58; letter-spacing:1.5px; }}
+      .story-title{{ font: 500 11px 'JetBrains Mono',monospace; fill: #cdd9e5; }}
+      .story-meta {{ font: 400  9px 'JetBrains Mono',monospace; fill: #484f58; }}
+      .concept-ttl{{ font: 700 14px 'JetBrains Mono',monospace; fill: #39d353; }}
+      .concept-tl {{ font: 400 10px 'JetBrains Mono',monospace; fill: #8b949e; }}
+      .cat-badge  {{ font: 700  9px 'JetBrains Mono',monospace; fill: #0d1117; }}
+      .cmd-text   {{ font: 700 11px 'JetBrains Mono',monospace; fill: #39d353; }}
+      .fun-fact   {{ font: 400 10px 'JetBrains Mono',monospace; fill: #6e7681; font-style:italic; }}
+      .date-text  {{ font: 700 10px 'JetBrains Mono',monospace; fill: #484f58; }}
     </style>
   </defs>
 
-  <!-- Background -->
-  <rect width="600" height="600" class="bg"/>
+  <!-- BG -->
+  <rect width="600" height="{total_h}" class="bg"/>
 
   <!-- Top bar -->
-  <rect width="600" height="48" fill="#161b22"/>
-  <rect width="600" height="1" y="48" fill="#30363d"/>
-  <circle cx="20" cy="24" r="5" fill="#ff5f56"/>
-  <circle cx="36" cy="24" r="5" fill="#ffbd2e"/>
-  <circle cx="52" cy="24" r="5" fill="#27c93f"/>
-  <text x="76" y="29" class="date-text">daily-digest // {DATE_STR}</text>
-  <text x="480" y="29" class="date-text" text-anchor="start">@{GITHUB_USERNAME}</text>
+  <rect width="600" height="46" fill="#161b22"/>
+  <rect y="46" width="600" height="1" fill="#30363d"/>
+  <circle cx="18" cy="23" r="5" fill="#ff5f56"/>
+  <circle cx="34" cy="23" r="5" fill="#ffbd2e"/>
+  <circle cx="50" cy="23" r="5" fill="#27c93f"/>
+  <text x="70" y="28" class="date-text">daily-digest // {DATE_STR}</text>
+  <text x="590" y="28" class="date-text" text-anchor="end">@{GITHUB_USERNAME}</text>
 
-  <!-- HN Section Header -->
-  <rect x="16" y="64" width="568" height="1" fill="#21262d"/>
-  <text x="20" y="88" class="label">// hacker news top stories</text>
-  <rect x="20" y="94" width="3" height="168" fill="#39d353" opacity="0.4"/>
+  <!-- HN label + left accent bar -->
+  <text x="32" y="74" class="label">// HACKER NEWS TOP STORIES</text>
+  <rect x="20" y="82" width="2" height="{4 * 38 - 4}" fill="#39d353" opacity="0.5"/>
 
-  <!-- Dot indicator -->
-  <circle cx="8" cy="98" r="3" class="dot"/>
-
-  <!-- Story rows -->
+  <!-- Stories -->
   {story_rows}
 
   <!-- Divider -->
-  <rect x="16" y="276" width="568" height="1" fill="#21262d"/>
+  <rect x="0" y="{divider_y}" width="600" height="1" fill="#21262d"/>
 
-  <!-- Networking Section -->
-  <text x="20" y="300" class="label">// networking concept of the day</text>
+  <!-- Networking label -->
+  <text x="32" y="{net_label_y}" class="label">// NETWORKING CONCEPT OF THE DAY</text>
 
-  <!-- Category Badge -->
-  <rect x="20" y="310" width="{len(concept_cat)*8 + 16}" height="18" rx="9" fill="#2ea043"/>
-  <text x="{20 + (len(concept_cat)*8+16)//2}" y="322" class="cat-badge" text-anchor="middle">{concept_cat}</text>
+  <!-- Category badge -->
+  <rect x="20" y="{badge_y}" width="{badge_w}" height="17" rx="8" fill="#2ea043"/>
+  <text x="{20 + badge_w//2}" y="{badge_y + 12}" class="cat-badge" text-anchor="middle">{concept_cat}</text>
 
-  <!-- Concept title -->
-  <text x="20" y="352" class="concept-title">{concept_title}</text>
-  <text x="20" y="370" class="concept-tldr">{concept_tldr}</text>
+  <!-- Concept title + tldr -->
+  <text x="20" y="{title_y}" class="concept-ttl">{concept_title}</text>
+  <text x="20" y="{tldr_y}" class="concept-tl">{concept_tldr}</text>
 
   {cmd_block}
   {fun_text}
 
   <!-- Footer -->
-  <rect x="0" y="570" width="600" height="30" fill="#161b22"/>
-  <rect width="600" height="1" y="570" fill="#30363d"/>
-  <text x="20" y="589" class="date-text">auto-generated by daily-digest</text>
-  <text x="580" y="589" class="date-text" text-anchor="end">{BASE_URL}/todays</text>
+  <rect y="{footer_y - 1}" width="600" height="1" fill="#21262d"/>
+  <rect y="{footer_y}" width="600" height="28" fill="#161b22"/>
+  <text x="20" y="{footer_y + 18}" class="date-text">auto-generated by daily-digest</text>
+  <text x="590" y="{footer_y + 18}" class="date-text" text-anchor="end">{BASE_URL}/todays</text>
 </svg>"""
     return svg
 
